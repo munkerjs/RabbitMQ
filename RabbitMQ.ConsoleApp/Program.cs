@@ -9,11 +9,7 @@ class Program
     {
         // Basit Kuyruk Yönetimi
         // BasicExample basic = new BasicExample();
-
-        // Tekli olarak kuyruğa veri ekleme örneği
         // basic.SingleQueue();
-
-        // Çoklu olarak kuyruğa veri ekleme örneği
         // basic.MultipleQueue();
 
         // Exchange Tipleri ile Kuruk Yönetimi
@@ -21,10 +17,6 @@ class Program
         // exchange.Fanout();
         // exchange.Direct();
         // exchange.Topic();
-        exchange.Header();
-
-
-
-        Console.ReadLine();
+        exchange.Header();       
     }
 }

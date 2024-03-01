@@ -50,6 +50,8 @@ namespace RabbitMQ.Publisher
                 channel.BasicPublish(exchangName, "", null, messageBody);
                 Console.WriteLine($"Mesajınızı Gönderilmiştir : {message}");
             });
+
+            Console.ReadLine();
         }
 
         /// <summary>
@@ -119,6 +121,8 @@ namespace RabbitMQ.Publisher
                 channel.BasicPublish(exchangName, routeKey, null, messageBody);
                 Console.WriteLine($"Log Gönderilmiştir : {message}");
             });
+
+            Console.ReadLine();
         }
 
         /// <summary>
@@ -176,6 +180,8 @@ namespace RabbitMQ.Publisher
                 channel.BasicPublish(exchangName, routeKey, null, messageBody);
                 Console.WriteLine($"Log Gönderilmiştir : {message}");
             });
+
+            Console.ReadLine();
         }
 
         public void Header()
