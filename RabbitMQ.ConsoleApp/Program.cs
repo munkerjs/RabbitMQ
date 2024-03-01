@@ -25,16 +25,33 @@ class Program
         string queueName = "hello-queue";
         channel.QueueDeclare(queueName, true, false, false);
 
-        // Mesajımızı Oluşturalım.
-        string message = "Hello World!";
+        #region Kuyruğa Tek Mesaj İletim Örneği
+            //// Mesajımızı Oluşturalım.
+            //string message = "Hello World!";
 
-        // RabbitMQ'ya verileri iletirken Byte dizisi şeklinde iletmekteyiz. PDF, Excel veya Image bile iletebilirsin.
-        var messageBody = Encoding.UTF8.GetBytes(message);
+            //// RabbitMQ'ya verileri iletirken Byte dizisi şeklinde iletmekteyiz. PDF, Excel veya Image bile iletebilirsin.
+            //var messageBody = Encoding.UTF8.GetBytes(message);
 
-        // Artık Mesajımızı Kuyruğa Ekleyelim.
-        channel.BasicPublish(string.Empty, queueName, null, messageBody);
+            //// Artık Mesajımızı Kuyruğa Ekleyelim.
+            //channel.BasicPublish(string.Empty, queueName, null, messageBody);
+            //Console.WriteLine("Mesajınızı Gönderildi.");
+        #endregion
 
-        Console.WriteLine("Mesajınızı Gönderildi.");
+        #region Kuyruğa Birden Fazla Mesaj İletim Örneği
+        Enumerable.Range(1, 50).ToList().ForEach(x=>
+        {
+            // Mesajımızı Oluşturalım.
+            string message = $"Message {x}";
+
+            // RabbitMQ'ya verileri iletirken Byte dizisi şeklinde iletmekteyiz. PDF, Excel veya Image bile iletebilirsin.
+            var messageBody = Encoding.UTF8.GetBytes(message);
+
+            // Artık Mesajımızı Kuyruğa Ekleyelim.
+            channel.BasicPublish(string.Empty, queueName, null, messageBody);
+            Console.WriteLine($"Mesajınızı Gönderilmiştir : {message}");
+        });
+        #endregion
+               
         Console.ReadLine();
     }
 }
