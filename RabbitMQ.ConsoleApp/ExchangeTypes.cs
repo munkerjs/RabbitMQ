@@ -5,11 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static RabbitMQ.Publisher.ExchangeTypes;
 
 namespace RabbitMQ.Publisher
 {
     public class ExchangeTypes
     {
+
+       
         /// <summary>
         /// Fanout, herhangi bir filtre olmadan kendisine bağlı olan tüm kuyruklara ilgili mesajı iletir.
         /// </summary>
@@ -50,5 +53,86 @@ namespace RabbitMQ.Publisher
                 Console.WriteLine($"Mesajınızı Gönderilmiştir : {message}");
             });
         }
+
+        /// <summary>
+        /// Direct, kuyruk adına göre hedefleme, gönderim yapılır.
+        /// </summary>
+        public void Direct()
+        {
+            var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            IConfiguration configuration = builder.Build();
+
+            string rabbitMqConnectionString = configuration.GetConnectionString("RabbitMQ") ?? "";
+
+            // Bilgilerimizi tanımlayalım
+            var factory = new ConnectionFactory();
+            factory.Uri = new Uri(rabbitMqConnectionString);
+
+            // RabbitMQ için bağlantı açalım
+            using var connection = factory.CreateConnection();
+
+            // Bağlantı Tüneli - Kanalı Oluşturalım ve RabbitMQ ya bağlanalım.
+            var channel = connection.CreateModel();
+
+            // Mesajların boşa düşmemesi için önce bir kuyruk oluşturalım.
+            string exchangName = "logs-direct";
+
+            // [durable:true] Uygulama restart atılsa bile fiziksel olarak kayıt edelim, silinmesin.
+            // [durable:false] Uygulama restart atılırsa tüm exchangeler kaybolur.
+            channel.ExchangeDeclare(exchangName, durable: true, type: ExchangeType.Direct);
+
+
+            /* -------------------------------------------------------------------------------------
+             * Örnek Senaryo
+             * Rasgele log seviyelerine göre mesajlar gönderelim.
+             * info message
+             * warning message
+             * error message
+             * critical message
+             * gibi ..
+             */
+
+            Enum.GetNames(typeof(LogNames)).ToList().ForEach(x=>
+            {
+                var queueName = $"direct-queue-{x}";
+                channel.QueueDeclare(queueName, true, false, false, null);
+
+                // Root belirlenmesi gerekiyor, kuyruk tipine göre bind edilecek.
+                var routeKey = $"route-{x}";
+
+                // Kuyruk isimlerini Bind edelim.
+                channel.QueueBind(queueName, exchangName, routeKey, null);
+            });
+
+            Enumerable.Range(1, 50).ToList().ForEach(x =>
+            {
+                LogNames logName = (LogNames)new Random().Next(1,6); // dizi içerisinde random değer getirelim.
+
+                // Mesajımızı Oluşturalım.
+                string message = $"Log-type: {logName} : Message {x}";
+
+                // RabbitMQ'ya verileri iletirken Byte dizisi şeklinde iletmekteyiz. PDF, Excel veya Image bile iletebilirsin.
+                var messageBody = Encoding.UTF8.GetBytes(message);
+
+                // Root belirlenmesi gerekiyor, kuyruk tipine göre bind edilecek.
+                var routeKey = $"route-{logName}";
+
+                // Artık Mesajımızı Kuyruğa Ekleyelim.
+                channel.BasicPublish(exchangName, routeKey, null, messageBody);
+                Console.WriteLine($"Log Gönderilmiştir : {message}");
+            });
+        }
+
+
+        #region Utils
+        public enum LogNames
+        {
+            Critical = 1,
+            Error = 2,
+            Warning = 3,
+            Info = 4,
+            Success = 5
+        }
+        #endregion
     }
 }

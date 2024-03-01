@@ -18,7 +18,8 @@ class Program
 
         // Exchange Tipleri ile Kuruk Yönetimi
         ExchangeTypes exchange = new ExchangeTypes();
-        exchange.Fanout();
+        // exchange.Fanout();
+        exchange.Direct();
 
 
 
