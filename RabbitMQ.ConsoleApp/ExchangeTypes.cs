@@ -216,6 +216,8 @@ namespace RabbitMQ.Publisher
             var properties = channel.CreateBasicProperties();
             properties.Headers = headers;
 
+            properties.Persistent = true; // MESAJLAR KALICI HALE GELİR.
+
             channel.BasicPublish(exchangName, String.Empty, properties, Encoding.UTF8.GetBytes("Header Mesajı"));
 
             Console.WriteLine("Mesaj Gönderilmiştir");
