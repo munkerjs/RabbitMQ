@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/RabbitMQ.Subsriber/appsettings.json
+/RabbitMQ.ConsoleApp/appsettings.json
