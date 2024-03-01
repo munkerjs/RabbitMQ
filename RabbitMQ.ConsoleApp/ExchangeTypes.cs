@@ -178,6 +178,43 @@ namespace RabbitMQ.Publisher
             });
         }
 
+        public void Header()
+        {
+            var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            IConfiguration configuration = builder.Build();
+
+            string rabbitMqConnectionString = configuration.GetConnectionString("RabbitMQ") ?? "";
+
+            // Bilgilerimizi tanımlayalım
+            var factory = new ConnectionFactory();
+            factory.Uri = new Uri(rabbitMqConnectionString);
+
+            // RabbitMQ için bağlantı açalım
+            using var connection = factory.CreateConnection();
+
+            // Bağlantı Tüneli - Kanalı Oluşturalım ve RabbitMQ ya bağlanalım.
+            var channel = connection.CreateModel();
+
+            // Mesajların boşa düşmemesi için önce bir kuyruk oluşturalım.
+            string exchangName = "header-exchange";
+
+            // [durable:true] Uygulama restart atılsa bile fiziksel olarak kayıt edelim, silinmesin.
+            // [durable:false] Uygulama restart atılırsa tüm exchangeler kaybolur.
+            channel.ExchangeDeclare(exchangName, durable: true, type: ExchangeType.Headers);
+
+            // Mesajı Gönderelim
+            Dictionary<string, object> headers = new Dictionary<string, object>();
+            headers.Add("format", "pdf");
+            headers.Add("shape", "A4");
+
+            var properties = channel.CreateBasicProperties();
+            properties.Headers = headers;
+
+            channel.BasicPublish(exchangName, String.Empty, properties, Encoding.UTF8.GetBytes("Header Mesajı"));
+
+            Console.WriteLine("Mesaj Gönderilmiştir");
+            Console.ReadLine();
+        }
 
         #region Utils
         public enum LogNames

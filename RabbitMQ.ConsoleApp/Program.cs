@@ -20,7 +20,8 @@ class Program
         ExchangeTypes exchange = new ExchangeTypes();
         // exchange.Fanout();
         // exchange.Direct();
-        exchange.Topic();
+        // exchange.Topic();
+        exchange.Header();
 
 
 
