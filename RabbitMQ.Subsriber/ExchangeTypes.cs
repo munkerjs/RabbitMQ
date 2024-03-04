@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RabbitMQ.Shared;
+using System.Text.Json;
 
 namespace RabbitMQ.Subsriber
 {
@@ -293,10 +295,12 @@ namespace RabbitMQ.Subsriber
             {
                 var message = Encoding.UTF8.GetString(e.Body.ToArray());
 
+                ProductClass product = JsonSerializer.Deserialize<ProductClass>(message);
+
                 // 1.5 Saniyelik Gecikme Verelim
                 Thread.Sleep(1500);
 
-                Console.WriteLine($"Gelen Mesaj: {message}");
+                Console.WriteLine($"Gelen Mesaj: {product.Id} - {product.Name} - {product.Price} - {product.Stock}");
 
                 // Mesajları işledikten sonra silelim.
                 // [True] İşlenmiş ama RabbitMQ'ya gitmemiş başka mesajlar varsa onun bilgilerini de RabbitMQ'ya haberdar eder.

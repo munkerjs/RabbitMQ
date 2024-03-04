@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
+using RabbitMQ.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static RabbitMQ.Publisher.ExchangeTypes;
 
@@ -218,7 +220,19 @@ namespace RabbitMQ.Publisher
 
             properties.Persistent = true; // MESAJLAR KALICI HALE GELİR.
 
-            channel.BasicPublish(exchangName, String.Empty, properties, Encoding.UTF8.GetBytes("Header Mesajı"));
+            var prodcut = new ProductClass
+            {
+                Id = 1,
+                Name = "Kalem",
+                Price = 100,
+                Stock = 20
+            };
+
+            // Seriliazed Product Message
+            // Mesaj olarak büyük datalar göndermek çok da tercih edilen bir yöntem değil ama örnek olsun.
+            var productJsonString = JsonSerializer.Serialize(prodcut);
+
+            channel.BasicPublish(exchangName, String.Empty, properties, Encoding.UTF8.GetBytes(productJsonString));
 
             Console.WriteLine("Mesaj Gönderilmiştir");
             Console.ReadLine();
