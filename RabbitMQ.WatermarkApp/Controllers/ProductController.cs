@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.WatermarkApp.Events;
 using RabbitMQ.WatermarkApp.Models;
+using RabbitMQ.WatermarkApp.Services;
 
 namespace RabbitMQ.WatermarkApp.Controllers
 {
     public class ProductController : Controller
     {
         private readonly AppDbContext _context;
-        public ProductController(AppDbContext context)
+        private readonly RabbitMQPublisher _rabbitMQPublisher;
+        public ProductController(AppDbContext context, RabbitMQPublisher rabbitMQPublisher)
         {
             _context = context;
+            _rabbitMQPublisher = rabbitMQPublisher;
         }
 
         // GET: Products
@@ -59,11 +63,22 @@ namespace RabbitMQ.WatermarkApp.Controllers
 
             if (!ModelState.IsValid) return View(product);
 
+            if(ImageFile is { Length: > 0 })
+            {
+                var randomImageName = Guid.NewGuid() + Path.GetExtension(ImageFile.FileName); // random dosya adı
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images", randomImageName); // dosya konumu
+                await using FileStream stream = new(path, FileMode.Create); // dosya kayıt
+
+                await ImageFile.CopyToAsync(stream); // belirlenen dosyaya kopyala
+
+                _rabbitMQPublisher.Publish(new ProductImageCreatedEvent() { ImageName = randomImageName});
+                product.ImageName = randomImageName;
+            }
+
+
             _context.Add(product);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-
-            return View(product);
         }
 
         // GET: Products/Edit/5
