@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /RabbitMQ.Subsriber/appsettings.json
 /RabbitMQ.ConsoleApp/appsettings.json
+/RabbitMQ.WatermarkApp/appsettings.json
